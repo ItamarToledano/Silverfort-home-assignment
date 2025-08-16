@@ -1,8 +1,18 @@
 import { Injectable } from "@nestjs/common";
-import { Shape, Color, Cell, GameState, LeaderboardEntry } from "./game.types";
+import {
+  Shape,
+  Color,
+  Cell,
+  GameState,
+  LeaderboardEntry,
+} from "@silverfort/shared-types";
 
 @Injectable()
 export class GameService {
+  private readonly BOARD_ROWS = 3;
+  private readonly BOARD_COLS = 6;
+  private readonly COOLDOWN_TURNS = 3;
+
   private gameState: GameState;
   private leaderboard: LeaderboardEntry[] = [];
   private scoreAlreadySaved: boolean = false;
@@ -76,24 +86,8 @@ export class GameService {
     };
   }
 
-  private findValidCombination(
-    board: Cell[][],
-    row: number,
-    col: number
-  ): { shape: Shape; color: Color } {
-    const randomShape =
-      Object.values(Shape)[
-        Math.floor(Math.random() * Object.values(Shape).length)
-      ];
-    const randomColor =
-      Object.values(Color)[
-        Math.floor(Math.random() * Object.values(Color).length)
-      ];
-
-    return {
-      shape: randomShape,
-      color: randomColor,
-    };
+  private getRandomElement<T>(array: T[]): T {
+    return array[Math.floor(Math.random() * array.length)];
   }
 
   private getAdjacentShapes(
@@ -103,16 +97,16 @@ export class GameService {
   ): Set<Shape> {
     const shapes = new Set<Shape>();
 
-    if (row > 0 && board[row - 1] && board[row - 1][col]) {
+    if (row > 0 && board[row - 1]?.[col]) {
       shapes.add(board[row - 1][col].shape);
     }
-    if (row < 2 && board[row + 1] && board[row + 1][col]) {
+    if (row < this.BOARD_ROWS - 1 && board[row + 1]?.[col]) {
       shapes.add(board[row + 1][col].shape);
     }
-    if (col > 0 && board[row] && board[row][col - 1]) {
+    if (col > 0 && board[row]?.[col - 1]) {
       shapes.add(board[row][col - 1].shape);
     }
-    if (col < 5 && board[row] && board[row][col + 1]) {
+    if (col < this.BOARD_COLS - 1 && board[row]?.[col + 1]) {
       shapes.add(board[row][col + 1].shape);
     }
 
@@ -126,20 +120,28 @@ export class GameService {
   ): Set<Color> {
     const colors = new Set<Color>();
 
-    if (row > 0 && board[row - 1] && board[row - 1][col]) {
+    if (row > 0 && board[row - 1]?.[col]) {
       colors.add(board[row - 1][col].color);
     }
-    if (row < 2 && board[row + 1] && board[row + 1][col]) {
+    if (row < this.BOARD_ROWS - 1 && board[row + 1]?.[col]) {
       colors.add(board[row + 1][col].color);
     }
-    if (col > 0 && board[row] && board[row][col - 1]) {
+    if (col > 0 && board[row]?.[col - 1]) {
       colors.add(board[row][col - 1].color);
     }
-    if (col < 5 && board[row] && board[row][col + 1]) {
+    if (col < this.BOARD_COLS - 1 && board[row]?.[col + 1]) {
       colors.add(board[row][col + 1].color);
     }
 
     return colors;
+  }
+
+  private getRandomShape(): Shape {
+    return this.getRandomElement(Object.values(Shape));
+  }
+
+  private getRandomColor(): Color {
+    return this.getRandomElement(Object.values(Color));
   }
 
   public getGameState(): GameState {
@@ -176,11 +178,10 @@ export class GameService {
       return { success: false };
     }
 
-    const combination = this.findValidCombination(
-      this.gameState.board,
-      row,
-      col
-    );
+    const combination = {
+      shape: this.getRandomShape(),
+      color: this.getRandomColor(),
+    };
 
     const adjacentShapes = this.getAdjacentShapes(
       this.gameState.board,
@@ -209,14 +210,15 @@ export class GameService {
     this.gameState.board[row][col].color = combination.color;
     this.gameState.board[row][col].cooldown = 3;
     this.gameState.board[row][col].isClickable = false;
+
     this.gameState.score++;
 
     return { success: true, newState: { ...this.gameState } };
   }
 
   private updateCooldowns(): void {
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 6; col++) {
+    for (let row = 0; row < this.BOARD_ROWS; row++) {
+      for (let col = 0; col < this.BOARD_COLS; col++) {
         if (this.gameState.board[row][col].cooldown > 0) {
           this.gameState.board[row][col].cooldown--;
           if (this.gameState.board[row][col].cooldown === 0) {

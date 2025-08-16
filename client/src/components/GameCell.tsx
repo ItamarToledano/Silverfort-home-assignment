@@ -1,5 +1,5 @@
-import React, { useMemo, useCallback } from "react";
-import { Cell } from "../types";
+import React, { useCallback } from "react";
+import { Cell } from "@silverfort/shared-types";
 import ShapeRenderer from "./ShapeRenderer";
 import { StyledGameCell, CooldownChip } from "./styled";
 

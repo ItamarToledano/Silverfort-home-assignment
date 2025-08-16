@@ -2,9 +2,14 @@
 
 echo "🎮 Starting Multisession Game..."
 
-# Check if both package.json files exist
+# Check if all package.json files exist
 if [ ! -f "package.json" ]; then
     echo "❌ Error: package.json not found in root directory"
+    exit 1
+fi
+
+if [ ! -f "shared-types/package.json" ]; then
+    echo "❌ Error: shared-types/package.json not found"
     exit 1
 fi
 

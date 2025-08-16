@@ -1,7 +1,7 @@
 import React from "react";
-import { DialogContent, List, ListItem, ListItemText } from "@mui/material";
+import { DialogContent, List, ListItemText } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
-import { LeaderboardEntry } from "../types";
+import { LeaderboardEntry } from "@silverfort/shared-types";
 import {
   LeaderboardStyledDialog,
   LeaderboardStyledDialogTitle,

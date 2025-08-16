@@ -1,5 +1,5 @@
 import React from "react";
-import { Shape, Color } from "../types";
+import { Shape, Color } from "@silverfort/shared-types";
 import { ShapeContainer } from "./styled";
 
 interface ShapeRendererProps {

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Cell } from "../types";
+import { Cell } from "@silverfort/shared-types";
 import GameCell from "./GameCell";
 import { GameBoardStyledContainer, GameBoardStyledRow } from "./styled";
 

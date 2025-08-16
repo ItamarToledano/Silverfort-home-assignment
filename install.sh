@@ -6,6 +6,12 @@ echo "🚀 Installing Multisession Game Dependencies..."
 echo "📦 Installing root dependencies..."
 npm install
 
+# Install shared types dependencies
+echo "📦 Installing shared types dependencies..."
+cd shared-types
+npm install
+cd ..
+
 # Install server dependencies
 echo "📦 Installing server dependencies..."
 cd server

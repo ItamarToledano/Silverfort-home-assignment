@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "A multisession web game with real-time synchronization",
   "private": true,
+  "workspaces": [
+    "shared-types",
+    "client",
+    "server"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "server:dev": "cd server && npm run start:dev",
@@ -10,10 +15,12 @@
     "server:start": "cd server && npm run start:prod",
     "client:dev": "cd client && npm start",
     "client:build": "cd client && npm run build",
-    "build": "npm run server:build && npm run client:build",
+    "shared:build": "cd shared-types && npm run build",
+    "shared:dev": "cd shared-types && npm run dev",
+    "build": "npm run shared:build && npm run server:build && npm run client:build",
     "start": "npm run server:start",
-    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "clean": "rm -rf node_modules client/node_modules server/node_modules client/dist server/dist"
+    "install:all": "npm install && cd shared-types && npm install && cd ../client && npm install && cd ../server && npm install",
+    "clean": "rm -rf node_modules client/node_modules server/node_modules shared-types/node_modules client/dist server/dist shared-types/dist"
   },
   "devDependencies": {
     "concurrently": "^8.2.0"

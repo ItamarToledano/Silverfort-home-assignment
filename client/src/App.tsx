@@ -9,7 +9,7 @@ import {
 import { io, Socket } from "socket.io-client";
 import PlayIcon from "@mui/icons-material/PlayArrow";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import { GameState, LeaderboardEntry } from "./types";
+import { GameState, LeaderboardEntry } from "@silverfort/shared-types";
 import GameBoard from "./components/GameBoard";
 import GameOverModal from "./components/GameOverModal";
 import LeaderboardModal from "./components/LeaderboardModal";
@@ -23,6 +23,8 @@ import {
   AppStyledButton,
 } from "./components/styled";
 import { theme } from "./theme";
+
+const SERVER_URL = "http://localhost:3001";
 
 const App: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -72,7 +74,7 @@ const App: React.FC = () => {
   }, [socket]);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3001");
+    const newSocket = io(SERVER_URL);
     setSocket(newSocket);
 
     newSocket.on("connect", handleConnect);
