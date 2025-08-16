@@ -10,7 +10,7 @@ export const LeaderboardStyledDialog = styled(Dialog)({
 
 export const LeaderboardStyledDialogTitle = styled(DialogTitle)({
   textAlign: "center",
-  color: "#4834d4",
+  color: "white",
 });
 
 export const StyledIconButton = styled(IconButton)({

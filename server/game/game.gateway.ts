@@ -45,13 +45,18 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Broadcast the new game state to all connected clients
       this.server.emit("gameState", result.newState);
     } else if (result.gameOver) {
-      // Broadcast game over to all clients
+      // Broadcast game over to all clients with failed move info
       this.server.emit("gameOver", {
         score: this.gameService.getGameState().score,
+        failedMove: result.failedMove,
       });
     }
 
-    return { success: result.success, gameOver: result.gameOver };
+    return {
+      success: result.success,
+      gameOver: result.gameOver,
+      failedMove: result.failedMove,
+    };
   }
 
   @SubscribeMessage("resetGame")
@@ -73,10 +78,23 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client: Socket,
     payload: { nickname: string; score: number }
   ) {
-    this.gameService.addToLeaderboard(payload.nickname, payload.score);
-    const leaderboard = this.gameService.getLeaderboard();
-    // Broadcast updated leaderboard to all clients
-    this.server.emit("leaderboard", leaderboard);
-    return { success: true };
+    const result = this.gameService.addToLeaderboard(
+      payload.nickname,
+      payload.score
+    );
+
+    if (result.success) {
+      const leaderboard = this.gameService.getLeaderboard();
+      // Broadcast updated leaderboard to all clients
+      this.server.emit("leaderboard", leaderboard);
+
+      // Also broadcast that a score was saved (to close modals for other clients)
+      this.server.emit("scoreSaved", {
+        nickname: payload.nickname,
+        score: payload.score,
+      });
+    }
+
+    return { success: result.success, alreadySaved: result.alreadySaved };
   }
 }

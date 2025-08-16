@@ -5,6 +5,7 @@ import { Shape, Color, Cell, GameState, LeaderboardEntry } from "./game.types";
 export class GameService {
   private gameState: GameState;
   private leaderboard: LeaderboardEntry[] = [];
+  private scoreAlreadySaved: boolean = false;
 
   constructor() {
     this.initializeGame();
@@ -24,7 +25,13 @@ export class GameService {
     for (let row = 0; row < 3; row++) {
       board[row] = [];
       for (let col = 0; col < 6; col++) {
-        const validCombination = this.findValidCombination(board, row, col);
+        // Generate a valid combination for the initial board
+        const validCombination = this.findValidCombinationForBoard(
+          board,
+          row,
+          col
+        );
+
         board[row][col] = {
           id: `${row}-${col}`,
           row,
@@ -40,7 +47,7 @@ export class GameService {
     return board;
   }
 
-  private findValidCombination(
+  private findValidCombinationForBoard(
     board: Cell[][],
     row: number,
     col: number
@@ -55,24 +62,32 @@ export class GameService {
       (color) => !adjacentColors.has(color)
     );
 
-    if (availableShapes.length === 0 || availableColors.length === 0) {
-      return {
-        shape:
-          availableShapes.length > 0
-            ? availableShapes[0]
-            : Object.values(Shape)[0],
-        color:
-          availableColors.length > 0
-            ? availableColors[0]
-            : Object.values(Color)[0],
-      };
+    // For board generation, ensure we have valid combinations
+    if (availableShapes.length === 0) {
+      availableShapes.push(...Object.values(Shape));
+    }
+    if (availableColors.length === 0) {
+      availableColors.push(...Object.values(Color));
     }
 
     return {
-      shape:
-        availableShapes[Math.floor(Math.random() * availableShapes.length)],
-      color:
-        availableColors[Math.floor(Math.random() * availableColors.length)],
+      shape: availableShapes[Math.floor(Math.random() * availableShapes.length)],
+      color: availableColors[Math.floor(Math.random() * availableColors.length)],
+    };
+  }
+
+  private findValidCombination(
+    board: Cell[][],
+    row: number,
+    col: number
+  ): { shape: Shape; color: Color } {
+    // Just return a random combination - let the validation happen in makeMove
+    const randomShape = Object.values(Shape)[Math.floor(Math.random() * Object.values(Shape).length)];
+    const randomColor = Object.values(Color)[Math.floor(Math.random() * Object.values(Color).length)];
+
+    return {
+      shape: randomShape,
+      color: randomColor,
     };
   }
 
@@ -125,13 +140,34 @@ export class GameService {
   }
 
   public getGameState(): GameState {
+    // Update cooldowns before returning game state
+    this.updateCooldowns();
     return { ...this.gameState };
+  }
+
+  public markGameOverModalShown(): void {
+    // This method is no longer needed as the modal is shown to all clients
+  }
+
+  public isGameOverModalShown(): boolean {
+    // This method is no longer needed as the modal is shown to all clients
+    return false;
+  }
+
+  public hasAnyClientSeenGameOver(): boolean {
+    // This method is no longer needed as the modal is shown to all clients
+    return false;
   }
 
   public makeMove(
     row: number,
     col: number
-  ): { success: boolean; newState?: GameState; gameOver?: boolean } {
+  ): {
+    success: boolean;
+    newState?: GameState;
+    gameOver?: boolean;
+    failedMove?: { shape: Shape; color: Color };
+  } {
     if (this.gameState.gameOver) {
       return { success: false };
     }
@@ -142,7 +178,7 @@ export class GameService {
       return { success: false };
     }
 
-    const validCombination = this.findValidCombination(
+    const combination = this.findValidCombination(
       this.gameState.board,
       row,
       col
@@ -161,23 +197,27 @@ export class GameService {
     );
 
     if (
-      adjacentShapes.has(validCombination.shape) ||
-      adjacentColors.has(validCombination.color)
+      adjacentShapes.has(combination.shape) ||
+      adjacentColors.has(combination.color)
     ) {
-      // No valid move possible - game over
+      // Invalid move - game over!
       this.gameState.gameOver = true;
-      return { success: false, gameOver: true };
+      return {
+        success: false,
+        gameOver: true,
+        failedMove: { shape: combination.shape, color: combination.color },
+      };
     }
 
     // Apply the move
-    this.gameState.board[row][col].shape = validCombination.shape;
-    this.gameState.board[row][col].color = validCombination.color;
-    this.gameState.board[row][col].cooldown = 3;
+    this.gameState.board[row][col].shape = combination.shape;
+    this.gameState.board[row][col].color = combination.color;
+    this.gameState.board[row][col].cooldown = 3; // Start at 3, count down to 0
     this.gameState.board[row][col].isClickable = false;
     this.gameState.score++;
 
-    // Update cooldowns for all cells
-    this.updateCooldowns();
+    // Don't update cooldowns immediately - let it happen on the next turn
+    // this.updateCooldowns();
 
     return { success: true, newState: { ...this.gameState } };
   }
@@ -196,11 +236,19 @@ export class GameService {
   }
 
   public resetGame(): GameState {
+    this.scoreAlreadySaved = false; // Reset the flag for new game
     this.initializeGame();
     return { ...this.gameState };
   }
 
-  public addToLeaderboard(nickname: string, score: number): void {
+  public addToLeaderboard(
+    nickname: string,
+    score: number
+  ): { success: boolean; alreadySaved: boolean } {
+    if (this.scoreAlreadySaved) {
+      return { success: false, alreadySaved: true };
+    }
+
     this.leaderboard.push({
       nickname,
       score,
@@ -210,6 +258,11 @@ export class GameService {
     // Sort by score (descending) and keep only top 10
     this.leaderboard.sort((a, b) => b.score - a.score);
     this.leaderboard = this.leaderboard.slice(0, 10);
+
+    // Mark that a score has been saved
+    this.scoreAlreadySaved = true;
+
+    return { success: true, alreadySaved: false };
   }
 
   public getLeaderboard(): LeaderboardEntry[] {

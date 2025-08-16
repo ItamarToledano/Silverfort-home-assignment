@@ -32,7 +32,12 @@ const App: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [showGameOver, setShowGameOver] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [failedMove, setFailedMove] = useState<{
+    shape: string;
+    color: string;
+  } | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [scoreAlreadySaved, setScoreAlreadySaved] = useState(false);
 
   // Memoize socket event handlers to prevent unnecessary re-renders
   const handleConnect = useCallback(() => {
@@ -52,13 +57,46 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const handleGameOver = useCallback((data: { score: number }) => {
-    setShowGameOver(true);
-  }, []);
+  const handleGameOver = useCallback(
+    (data: {
+      score: number;
+      failedMove?: { shape: string; color: string };
+    }) => {
+      setShowGameOver(true);
+      setFailedMove(data.failedMove || null);
+      // Reset the flag so this client can potentially save
+      setScoreAlreadySaved(false);
+    },
+    []
+  );
+
+  const handleScoreSaved = useCallback(
+    (data: { nickname: string; score: number }) => {
+      setScoreAlreadySaved(true);
+      setShowGameOver(false); // Close modal for all clients when someone saves
+    },
+    []
+  );
 
   const handleLeaderboard = useCallback((data: LeaderboardEntry[]) => {
+    console.log("Received leaderboard data:", data);
     setLeaderboard(data);
+    // Don't auto-close leaderboard modal - let user close it manually
   }, []);
+
+  const handleShowLeaderboard = useCallback(() => {
+    console.log(
+      "Leaderboard button clicked, socket:",
+      socket,
+      "showLeaderboard:",
+      showLeaderboard
+    );
+    if (socket) {
+      socket.emit("getLeaderboard");
+      setShowLeaderboard(true);
+      console.log("Set showLeaderboard to true");
+    }
+  }, [socket]);
 
   useEffect(() => {
     const newSocket = io("http://localhost:3001");
@@ -69,6 +107,7 @@ const App: React.FC = () => {
     newSocket.on("gameState", handleGameState);
     newSocket.on("gameOver", handleGameOver);
     newSocket.on("leaderboard", handleLeaderboard);
+    newSocket.on("scoreSaved", handleScoreSaved);
 
     return () => {
       newSocket.off("connect", handleConnect);
@@ -76,6 +115,7 @@ const App: React.FC = () => {
       newSocket.off("gameState", handleGameState);
       newSocket.off("gameOver", handleGameOver);
       newSocket.off("leaderboard", handleLeaderboard);
+      newSocket.off("scoreSaved", handleScoreSaved);
       newSocket.close();
     };
   }, [
@@ -84,6 +124,7 @@ const App: React.FC = () => {
     handleGameState,
     handleGameOver,
     handleLeaderboard,
+    handleScoreSaved,
   ]);
 
   // Memoize handlers to prevent unnecessary re-renders
@@ -100,13 +141,7 @@ const App: React.FC = () => {
     if (socket) {
       socket.emit("resetGame");
       setShowGameOver(false);
-    }
-  }, [socket]);
-
-  const handleShowLeaderboard = useCallback(() => {
-    if (socket) {
-      socket.emit("getLeaderboard");
-      setShowLeaderboard(true);
+      setScoreAlreadySaved(false); // Reset the flag for new game
     }
   }, [socket]);
 
@@ -114,6 +149,8 @@ const App: React.FC = () => {
     (nickname: string) => {
       if (socket && gameState) {
         socket.emit("addToLeaderboard", { nickname, score: gameState.score });
+        // Set the flag locally so this client can't save again
+        setScoreAlreadySaved(true);
       }
     },
     [socket, gameState]
@@ -155,7 +192,7 @@ const App: React.FC = () => {
       <AppContainer>
         <Container maxWidth="lg">
           <GameHeader>
-            <GameTitle>Multisession Game</GameTitle>
+            <GameTitle>Silverfort Multisession Game</GameTitle>
             <ScoreContainer>
               <Chip
                 label={`Score: ${gameState.score}`}
@@ -189,7 +226,7 @@ const App: React.FC = () => {
               New Game
             </AppStyledButton>
             <AppStyledButton
-              variant="outlined"
+              variant="contained"
               color="secondary"
               size="large"
               onClick={handleShowLeaderboard}
@@ -205,6 +242,8 @@ const App: React.FC = () => {
           score={gameState.score}
           onClose={handleCloseGameOver}
           onSaveScore={handleSaveScore}
+          failedMove={failedMove}
+          scoreAlreadySaved={scoreAlreadySaved}
         />
 
         <LeaderboardModal
