@@ -5,6 +5,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Shape, Color } from "@silverfort/shared-types";
 import {
   GameOverStyledDialog,
   GameOverStyledDialogTitle,
@@ -17,7 +18,7 @@ interface GameOverModalProps {
   score: number;
   onClose: () => void;
   onSaveScore: (nickname: string) => void;
-  failedMove?: { shape: string; color: string } | null;
+  failedMove?: { shape: Shape; color: Color } | null;
   scoreAlreadySaved?: boolean;
 }
 
@@ -52,8 +53,8 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
 
       {failedMove && (
         <Typography variant="body1" sx={{ mb: 2, color: "error.main" }}>
-          You really wish it wasn't a {failedMove.color} {failedMove.shape}
-          ,don't you?
+          You really wish it wasn't a {failedMove.color} {failedMove.shape},
+          don't you?
         </Typography>
       )}
 

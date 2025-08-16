@@ -32,9 +32,9 @@ export class GameService {
   private generateValidBoard(): Cell[][] {
     const board: Cell[][] = [];
 
-    for (let row = 0; row < 3; row++) {
+    for (let row = 0; row < this.BOARD_ROWS; row++) {
       board[row] = [];
-      for (let col = 0; col < 6; col++) {
+      for (let col = 0; col < this.BOARD_COLS; col++) {
         const validCombination = this.findValidCombinationForBoard(
           board,
           row,
@@ -71,18 +71,16 @@ export class GameService {
       (color) => !adjacentColors.has(color)
     );
 
-    if (availableShapes.length === 0) {
+    if (!availableShapes.length) {
       availableShapes.push(...Object.values(Shape));
     }
-    if (availableColors.length === 0) {
+    if (!availableColors.length) {
       availableColors.push(...Object.values(Color));
     }
 
     return {
-      shape:
-        availableShapes[Math.floor(Math.random() * availableShapes.length)],
-      color:
-        availableColors[Math.floor(Math.random() * availableColors.length)],
+      shape: this.getRandomElement(availableShapes),
+      color: this.getRandomElement(availableColors),
     };
   }
 
@@ -208,7 +206,7 @@ export class GameService {
 
     this.gameState.board[row][col].shape = combination.shape;
     this.gameState.board[row][col].color = combination.color;
-    this.gameState.board[row][col].cooldown = 3;
+    this.gameState.board[row][col].cooldown = this.COOLDOWN_TURNS;
     this.gameState.board[row][col].isClickable = false;
 
     this.gameState.score++;

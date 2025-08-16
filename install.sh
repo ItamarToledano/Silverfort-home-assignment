@@ -1,35 +1,23 @@
 #!/bin/bash
 
-echo "🚀 Installing Multisession Game Dependencies..."
-
-# Install root dependencies
-echo "📦 Installing root dependencies..."
+echo "Installing root dependencies"
 npm install
 
-# Install shared types dependencies
-echo "📦 Installing shared types dependencies..."
+echo "Installing and building shared types"
 cd shared-types
 npm install
+npm run build
 cd ..
 
-# Install server dependencies
-echo "📦 Installing server dependencies..."
+echo "Installing server dependencies"
 cd server
 npm install
 cd ..
 
-# Install client dependencies
-echo "📦 Installing client dependencies..."
+echo "Installing and building client dependencies"
 cd client
 npm install
+npm run build
 cd ..
 
-echo "✅ All dependencies installed successfully!"
-echo ""
-echo "🎮 To start the game:"
-echo "1. Start both: npm run dev"
-echo "2. Start server only: npm run server:dev"
-echo "3. Start client only: npm run client:dev"
-echo ""
-echo "🌐 Game will be available at: http://localhost:3000"
-echo "🔌 Backend runs at: http://localhost:3001"
+echo "All dependencies installed and built successfully!"

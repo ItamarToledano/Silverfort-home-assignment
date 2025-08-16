@@ -9,7 +9,12 @@ import {
 import { io, Socket } from "socket.io-client";
 import PlayIcon from "@mui/icons-material/PlayArrow";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import { GameState, LeaderboardEntry } from "@silverfort/shared-types";
+import {
+  GameState,
+  LeaderboardEntry,
+  Shape,
+  Color,
+} from "@silverfort/shared-types";
 import GameBoard from "./components/GameBoard";
 import GameOverModal from "./components/GameOverModal";
 import LeaderboardModal from "./components/LeaderboardModal";
@@ -32,8 +37,8 @@ const App: React.FC = () => {
   const [showGameOver, setShowGameOver] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [failedMove, setFailedMove] = useState<{
-    shape: string;
-    color: string;
+    shape: Shape;
+    color: Color;
   } | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -51,9 +56,12 @@ const App: React.FC = () => {
     setGameState(state);
   };
 
-  const handleGameOver = (failedMove?: { shape: string; color: string }) => {
+  const handleGameOver = (data: {
+    score: number;
+    failedMove?: { shape: Shape; color: Color };
+  }) => {
     setShowGameOver(true);
-    setFailedMove(failedMove || null);
+    setFailedMove(data.failedMove || null);
     setScoreAlreadySaved(false);
   };
 
