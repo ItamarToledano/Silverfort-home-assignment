@@ -1,17 +1,12 @@
-import React, { useMemo, useCallback } from "react";
-import {
-  DialogContent,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
+import React from "react";
+import { DialogContent, List, ListItem, ListItemText } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { LeaderboardEntry } from "../types";
 import {
   LeaderboardStyledDialog,
   LeaderboardStyledDialogTitle,
   StyledIconButton,
-  EmptyStateContainer,
+  NoScoresContainer,
   StyledListItem,
   RankChip,
   ScoreTypography,
@@ -23,53 +18,50 @@ interface LeaderboardModalProps {
   onClose: () => void;
 }
 
+const formatDate = (date: Date) => {
+  return (
+    new Date(date).toLocaleDateString() +
+    " " +
+    new Date(date).toLocaleTimeString()
+  );
+};
+
 const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
   isOpen,
   leaderboard,
   onClose,
 }) => {
-  const formatDate = useCallback((date: Date) => {
-    return (
-      new Date(date).toLocaleDateString() +
-      " " +
-      new Date(date).toLocaleTimeString()
-    );
-  }, []);
-
-  const emptyState = useMemo(() => (
-    <EmptyStateContainer>
+  const noScoresLabel = (
+    <NoScoresContainer>
       <p style={{ textAlign: "center", color: "#666", fontSize: "1.1rem" }}>
         No scores yet. Be the first to play!
       </p>
-    </EmptyStateContainer>
-  ), []);
+    </NoScoresContainer>
+  );
 
-  const leaderboardList = useMemo(() => (
+  const leaderboardList = (
     <List>
       {leaderboard.map((entry, index) => (
-        <StyledListItem
-          key={index}
-          isLast={index === leaderboard.length - 1}
-        >
-          <RankChip
-            label={`#${index + 1}`}
-            rank={index}
-          />
+        <StyledListItem key={index}>
+          <RankChip label={`#${index + 1}`} rank={index} />
           <ListItemText
             primary={entry.nickname}
             secondary={formatDate(entry.timestamp)}
             sx={{ flex: 1 }}
           />
-          <ScoreTypography variant="h6">
-            {entry.score}
-          </ScoreTypography>
+          <ScoreTypography variant="h6">{entry.score}</ScoreTypography>
         </StyledListItem>
       ))}
     </List>
-  ), [leaderboard, formatDate]);
+  );
 
   return (
-    <LeaderboardStyledDialog open={isOpen} onClose={onClose} maxWidth="md" fullWidth>
+    <LeaderboardStyledDialog
+      open={isOpen}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+    >
       <LeaderboardStyledDialogTitle>
         Leaderboard
         <StyledIconButton onClick={onClose}>
@@ -77,7 +69,7 @@ const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
         </StyledIconButton>
       </LeaderboardStyledDialogTitle>
       <DialogContent>
-        {leaderboard.length === 0 ? emptyState : leaderboardList}
+        {!!leaderboard.length ? leaderboardList : noScoresLabel}
       </DialogContent>
     </LeaderboardStyledDialog>
   );

@@ -1,21 +1,18 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { io, Socket } from "socket.io-client";
 import {
   Container,
+  CssBaseline,
+  ThemeProvider,
   Typography,
   Chip,
-  ThemeProvider,
-  CssBaseline,
 } from "@mui/material";
-import {
-  PlayArrow as PlayIcon,
-  Leaderboard as LeaderboardIcon,
-} from "@mui/icons-material";
+import { io, Socket } from "socket.io-client";
+import PlayIcon from "@mui/icons-material/PlayArrow";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { GameState, LeaderboardEntry } from "./types";
 import GameBoard from "./components/GameBoard";
 import GameOverModal from "./components/GameOverModal";
 import LeaderboardModal from "./components/LeaderboardModal";
-import { theme } from "./theme";
 import {
   AppContainer,
   GameHeader,
@@ -25,11 +22,11 @@ import {
   ControlsContainer,
   AppStyledButton,
 } from "./components/styled";
+import { theme } from "./theme";
 
 const App: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [showGameOver, setShowGameOver] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [failedMove, setFailedMove] = useState<{
@@ -37,64 +34,40 @@ const App: React.FC = () => {
     color: string;
   } | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [scoreAlreadySaved, setScoreAlreadySaved] = useState(false);
 
-  // Memoize socket event handlers to prevent unnecessary re-renders
-  const handleConnect = useCallback(() => {
-    console.log("Connected to server");
+  const handleConnect = () => {
     setIsConnected(true);
-  }, []);
+  };
 
-  const handleDisconnect = useCallback(() => {
-    console.log("Disconnected from server");
+  const handleDisconnect = () => {
     setIsConnected(false);
-  }, []);
+  };
 
-  const handleGameState = useCallback((state: GameState) => {
+  const handleGameState = (state: GameState) => {
     setGameState(state);
-    if (state.gameOver) {
-      setShowGameOver(true);
-    }
-  }, []);
+  };
 
-  const handleGameOver = useCallback(
-    (data: {
-      score: number;
-      failedMove?: { shape: string; color: string };
-    }) => {
-      setShowGameOver(true);
-      setFailedMove(data.failedMove || null);
-      // Reset the flag so this client can potentially save
-      setScoreAlreadySaved(false);
-    },
-    []
-  );
+  const handleGameOver = (failedMove?: { shape: string; color: string }) => {
+    setShowGameOver(true);
+    setFailedMove(failedMove || null);
+    setScoreAlreadySaved(false);
+  };
 
-  const handleScoreSaved = useCallback(
-    (data: { nickname: string; score: number }) => {
-      setScoreAlreadySaved(true);
-      setShowGameOver(false); // Close modal for all clients when someone saves
-    },
-    []
-  );
+  const handleScoreSaved = () => {
+    setScoreAlreadySaved(true);
+    setShowGameOver(false);
+  };
 
-  const handleLeaderboard = useCallback((data: LeaderboardEntry[]) => {
-    console.log("Received leaderboard data:", data);
+  const handleLeaderboard = (data: LeaderboardEntry[]) => {
     setLeaderboard(data);
-    // Don't auto-close leaderboard modal - let user close it manually
-  }, []);
+  };
 
   const handleShowLeaderboard = useCallback(() => {
-    console.log(
-      "Leaderboard button clicked, socket:",
-      socket,
-      "showLeaderboard:",
-      showLeaderboard
-    );
     if (socket) {
       socket.emit("getLeaderboard");
       setShowLeaderboard(true);
-      console.log("Set showLeaderboard to true");
     }
   }, [socket]);
 
@@ -118,16 +91,8 @@ const App: React.FC = () => {
       newSocket.off("scoreSaved", handleScoreSaved);
       newSocket.close();
     };
-  }, [
-    handleConnect,
-    handleDisconnect,
-    handleGameState,
-    handleGameOver,
-    handleLeaderboard,
-    handleScoreSaved,
-  ]);
+  }, []);
 
-  // Memoize handlers to prevent unnecessary re-renders
   const handleCellClick = useCallback(
     (row: number, col: number) => {
       if (socket && gameState && !gameState.gameOver) {
@@ -141,7 +106,7 @@ const App: React.FC = () => {
     if (socket) {
       socket.emit("resetGame");
       setShowGameOver(false);
-      setScoreAlreadySaved(false); // Reset the flag for new game
+      setScoreAlreadySaved(false);
     }
   }, [socket]);
 
@@ -149,22 +114,20 @@ const App: React.FC = () => {
     (nickname: string) => {
       if (socket && gameState) {
         socket.emit("addToLeaderboard", { nickname, score: gameState.score });
-        // Set the flag locally so this client can't save again
         setScoreAlreadySaved(true);
       }
     },
     [socket, gameState]
   );
 
-  const handleCloseGameOver = useCallback(() => {
+  const handleCloseGameOver = () => {
     setShowGameOver(false);
-  }, []);
+  };
 
-  const handleCloseLeaderboard = useCallback(() => {
+  const handleCloseLeaderboard = () => {
     setShowLeaderboard(false);
-  }, []);
+  };
 
-  // Memoize the loading state component
   const loadingComponent = useMemo(
     () => (
       <ThemeProvider theme={theme}>

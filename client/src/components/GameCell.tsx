@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { Cell } from "../types";
 import ShapeRenderer from "./ShapeRenderer";
 import { StyledGameCell, CooldownChip } from "./styled";
@@ -9,15 +9,15 @@ interface GameCellProps {
 }
 
 const GameCell: React.FC<GameCellProps> = ({ cell, onClick }) => {
-  const handleClick = useMemo(() => () => {
-    if (cell.isClickable && cell.cooldown === 0) {
+  const handleClick = useCallback(() => {
+    if (cell.isClickable && !cell.cooldown) {
       onClick(cell.row, cell.col);
     }
   }, [cell.isClickable, cell.cooldown, cell.row, cell.col, onClick]);
 
   return (
-    <StyledGameCell 
-      isClickable={cell.isClickable} 
+    <StyledGameCell
+      isClickable={cell.isClickable}
       cooldown={cell.cooldown}
       onClick={handleClick}
     >

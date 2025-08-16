@@ -4,13 +4,11 @@ import { AppModule } from "./app.module";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for client connections
   app.enableCors({
     origin: true,
     credentials: true,
   });
 
   await app.listen(3001);
-  console.log("Game server running on port 3001");
 }
 bootstrap();

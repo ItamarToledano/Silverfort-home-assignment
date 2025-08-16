@@ -25,7 +25,6 @@ export class GameService {
     for (let row = 0; row < 3; row++) {
       board[row] = [];
       for (let col = 0; col < 6; col++) {
-        // Generate a valid combination for the initial board
         const validCombination = this.findValidCombinationForBoard(
           board,
           row,
@@ -62,7 +61,6 @@ export class GameService {
       (color) => !adjacentColors.has(color)
     );
 
-    // For board generation, ensure we have valid combinations
     if (availableShapes.length === 0) {
       availableShapes.push(...Object.values(Shape));
     }
@@ -71,8 +69,10 @@ export class GameService {
     }
 
     return {
-      shape: availableShapes[Math.floor(Math.random() * availableShapes.length)],
-      color: availableColors[Math.floor(Math.random() * availableColors.length)],
+      shape:
+        availableShapes[Math.floor(Math.random() * availableShapes.length)],
+      color:
+        availableColors[Math.floor(Math.random() * availableColors.length)],
     };
   }
 
@@ -81,9 +81,14 @@ export class GameService {
     row: number,
     col: number
   ): { shape: Shape; color: Color } {
-    // Just return a random combination - let the validation happen in makeMove
-    const randomShape = Object.values(Shape)[Math.floor(Math.random() * Object.values(Shape).length)];
-    const randomColor = Object.values(Color)[Math.floor(Math.random() * Object.values(Color).length)];
+    const randomShape =
+      Object.values(Shape)[
+        Math.floor(Math.random() * Object.values(Shape).length)
+      ];
+    const randomColor =
+      Object.values(Color)[
+        Math.floor(Math.random() * Object.values(Color).length)
+      ];
 
     return {
       shape: randomShape,
@@ -98,7 +103,6 @@ export class GameService {
   ): Set<Shape> {
     const shapes = new Set<Shape>();
 
-    // Check adjacent cells (not diagonal) - only if they exist
     if (row > 0 && board[row - 1] && board[row - 1][col]) {
       shapes.add(board[row - 1][col].shape);
     }
@@ -122,7 +126,6 @@ export class GameService {
   ): Set<Color> {
     const colors = new Set<Color>();
 
-    // Check adjacent cells (not diagonal) - only if they exist
     if (row > 0 && board[row - 1] && board[row - 1][col]) {
       colors.add(board[row - 1][col].color);
     }
@@ -140,22 +143,17 @@ export class GameService {
   }
 
   public getGameState(): GameState {
-    // Update cooldowns before returning game state
     this.updateCooldowns();
     return { ...this.gameState };
   }
 
-  public markGameOverModalShown(): void {
-    // This method is no longer needed as the modal is shown to all clients
-  }
+  public markGameOverModalShown(): void {}
 
   public isGameOverModalShown(): boolean {
-    // This method is no longer needed as the modal is shown to all clients
     return false;
   }
 
   public hasAnyClientSeenGameOver(): boolean {
-    // This method is no longer needed as the modal is shown to all clients
     return false;
   }
 
@@ -184,7 +182,6 @@ export class GameService {
       col
     );
 
-    // Check if the move is valid
     const adjacentShapes = this.getAdjacentShapes(
       this.gameState.board,
       row,
@@ -200,7 +197,6 @@ export class GameService {
       adjacentShapes.has(combination.shape) ||
       adjacentColors.has(combination.color)
     ) {
-      // Invalid move - game over!
       this.gameState.gameOver = true;
       return {
         success: false,
@@ -209,15 +205,11 @@ export class GameService {
       };
     }
 
-    // Apply the move
     this.gameState.board[row][col].shape = combination.shape;
     this.gameState.board[row][col].color = combination.color;
-    this.gameState.board[row][col].cooldown = 3; // Start at 3, count down to 0
+    this.gameState.board[row][col].cooldown = 3;
     this.gameState.board[row][col].isClickable = false;
     this.gameState.score++;
-
-    // Don't update cooldowns immediately - let it happen on the next turn
-    // this.updateCooldowns();
 
     return { success: true, newState: { ...this.gameState } };
   }
@@ -236,7 +228,7 @@ export class GameService {
   }
 
   public resetGame(): GameState {
-    this.scoreAlreadySaved = false; // Reset the flag for new game
+    this.scoreAlreadySaved = false;
     this.initializeGame();
     return { ...this.gameState };
   }
@@ -255,11 +247,9 @@ export class GameService {
       timestamp: new Date(),
     });
 
-    // Sort by score (descending) and keep only top 10
     this.leaderboard.sort((a, b) => b.score - a.score);
     this.leaderboard = this.leaderboard.slice(0, 10);
 
-    // Mark that a score has been saved
     this.scoreAlreadySaved = true;
 
     return { success: true, alreadySaved: false };

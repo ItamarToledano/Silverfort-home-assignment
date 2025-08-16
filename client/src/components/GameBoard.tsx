@@ -9,17 +9,20 @@ interface GameBoardProps {
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({ board, onCellClick }) => {
-  const memoizedBoard = useMemo(() => (
-    <GameBoardStyledContainer>
-      {board.map((row, rowIndex) => (
-        <GameBoardStyledRow key={rowIndex}>
-          {row.map((cell) => (
-            <GameCell key={cell.id} cell={cell} onClick={onCellClick} />
-          ))}
-        </GameBoardStyledRow>
-      ))}
-    </GameBoardStyledContainer>
-  ), [board, onCellClick]);
+  const memoizedBoard = useMemo(
+    () => (
+      <GameBoardStyledContainer>
+        {board.map((row, rowIndex) => (
+          <GameBoardStyledRow key={rowIndex}>
+            {row.map((cell) => (
+              <GameCell key={cell.id} cell={cell} onClick={onCellClick} />
+            ))}
+          </GameBoardStyledRow>
+        ))}
+      </GameBoardStyledContainer>
+    ),
+    [board, onCellClick]
+  );
 
   return memoizedBoard;
 };

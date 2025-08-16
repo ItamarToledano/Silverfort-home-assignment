@@ -5,37 +5,36 @@ import { ShapeContainer } from "./styled";
 interface ShapeRendererProps {
   shape: Shape;
   color: Color;
-  size?: number;
 }
 
-const ShapeRenderer: React.FC<ShapeRendererProps> = ({
-  shape,
-  color,
-  size = 60,
-}) => {
+const SHAPE_SIZE = 60;
+
+const ShapeRenderer: React.FC<ShapeRendererProps> = ({ shape, color }) => {
   const getShapePath = () => {
-    switch (shape) {
-      case Shape.TRIANGLE:
-        return `M ${size / 2} 10 L ${size - 10} ${size - 10} L 10 ${
-          size - 10
-        } Z`;
-      case Shape.SQUARE:
-        return `M 10 10 L ${size - 10} 10 L ${size - 10} ${size - 10} L 10 ${
-          size - 10
-        } Z`;
-      case Shape.DIAMOND:
-        return `M ${size / 2} 10 L ${size - 10} ${size / 2} L ${size / 2} ${
-          size - 10
-        } L 10 ${size / 2} Z`;
-      case Shape.CIRCLE:
-        return `M ${size / 2} 10 A ${size / 2 - 10} ${size / 2 - 10} 0 0 1 ${
-          size / 2
-        } ${size - 10} A ${size / 2 - 10} ${size / 2 - 10} 0 0 1 ${
-          size / 2
-        } 10`;
-      default:
-        return "";
-    }
+    const margin = 10;
+    const center = SHAPE_SIZE / 2;
+    const innerSize = SHAPE_SIZE - 2 * margin;
+
+    const paths = {
+      [Shape.TRIANGLE]: `M ${center} ${margin} L ${SHAPE_SIZE - margin} ${
+        SHAPE_SIZE - margin
+      } L ${margin} ${SHAPE_SIZE - margin} Z`,
+      [Shape.SQUARE]: `M ${margin} ${margin} L ${
+        SHAPE_SIZE - margin
+      } ${margin} L ${SHAPE_SIZE - margin} ${SHAPE_SIZE - margin} L ${margin} ${
+        SHAPE_SIZE - margin
+      } Z`,
+      [Shape.DIAMOND]: `M ${center} ${margin} L ${
+        SHAPE_SIZE - margin
+      } ${center} L ${center} ${SHAPE_SIZE - margin} L ${margin} ${center} Z`,
+      [Shape.CIRCLE]: `M ${center} ${margin} A ${innerSize / 2} ${
+        innerSize / 2
+      } 0 0 1 ${center} ${SHAPE_SIZE - margin} A ${innerSize / 2} ${
+        innerSize / 2
+      } 0 0 1 ${center} ${margin}`,
+    };
+
+    return paths[shape] || "";
   };
 
   const getColorValue = () => {
@@ -55,7 +54,11 @@ const ShapeRenderer: React.FC<ShapeRendererProps> = ({
 
   return (
     <ShapeContainer>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <svg
+        width={SHAPE_SIZE}
+        height={SHAPE_SIZE}
+        viewBox={`0 0 ${SHAPE_SIZE} ${SHAPE_SIZE}`}
+      >
         <path
           d={getShapePath()}
           fill={getColorValue()}

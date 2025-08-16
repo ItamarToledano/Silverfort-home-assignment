@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   DialogContent,
   DialogActions,
@@ -38,92 +38,70 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
     }
   }, [nickname, onSaveScore, onClose]);
 
-  const handleKeyPress = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === "Enter") {
-        handleSave();
-      }
-    },
-    [handleSave]
-  );
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      handleSave();
+    }
+  };
 
-  const handleNicknameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setNickname(e.target.value);
-    },
-    []
-  );
+  const modalContent = (
+    <ModalContent>
+      <Typography variant="h6" gutterBottom>
+        Your final score: <strong>{score}</strong>
+      </Typography>
 
-  const modalContent = useMemo(
-    () => (
-      <ModalContent>
-        <Typography variant="h6" gutterBottom>
-          Your final score: <strong>{score}</strong>
+      {failedMove && (
+        <Typography variant="body1" sx={{ mb: 2, color: "error.main" }}>
+          You really wish it wasn't a {failedMove.color} {failedMove.shape}
+          ,don't you?
         </Typography>
+      )}
 
-        {failedMove && (
-          <Typography variant="body1" sx={{ mb: 2, color: "error.main", fontStyle: "italic" }}>
-            You really wish it wasn't a {failedMove.color} {failedMove.shape}, don't you? 😅
+      {scoreAlreadySaved ? (
+        <Typography variant="body1" sx={{ mb: 3, color: "info.main" }}>
+          Someone else already saved their score to the leaderboard!
+        </Typography>
+      ) : (
+        <>
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            Enter your nickname to save your score to the leaderboard:
           </Typography>
-        )}
-
-        {scoreAlreadySaved ? (
-          <Typography variant="body1" sx={{ mb: 3, color: "info.main" }}>
-            Someone else already saved their score to the leaderboard!
-          </Typography>
-        ) : (
-          <>
-            <Typography variant="body1" sx={{ mb: 3 }}>
-              Enter your nickname to save your score to the leaderboard:
-            </Typography>
-            <TextField
-              fullWidth
-              label="Nickname"
-              variant="outlined"
-              value={nickname}
-              onChange={handleNicknameChange}
-              onKeyPress={handleKeyPress}
-              inputProps={{ maxLength: 20 }}
-              autoFocus
-              sx={{ mb: 2 }}
-            />
-          </>
-        )}
-      </ModalContent>
-    ),
-    [
-      score,
-      nickname,
-      handleKeyPress,
-      handleNicknameChange,
-      failedMove,
-      scoreAlreadySaved,
-    ]
+          <TextField
+            fullWidth
+            label="Nickname"
+            variant="outlined"
+            value={nickname}
+            onChange={(event) => setNickname(event.target.value)}
+            onKeyDown={handleKeyDown}
+            inputProps={{ maxLength: 20 }}
+            autoFocus
+            sx={{ mb: 2 }}
+          />
+        </>
+      )}
+    </ModalContent>
   );
 
-  const modalActions = useMemo(
-    () => (
-      <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
-        {!scoreAlreadySaved && (
-          <GameOverStyledButton
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            disabled={!nickname.trim()}
-          >
-            Save Score
-          </GameOverStyledButton>
-        )}
+  const modalActions = (
+    <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+      {!scoreAlreadySaved && (
         <GameOverStyledButton
-          variant="outlined"
-          color="secondary"
-          onClick={onClose}
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+          disabled={!nickname.trim()}
         >
-          Close
+          Save Score
         </GameOverStyledButton>
-      </DialogActions>
-    ),
-    [handleSave, onClose, nickname, scoreAlreadySaved]
+      )}
+      <GameOverStyledButton
+        variant="outlined"
+        color="secondary"
+        onClick={onClose}
+      >
+        Close
+      </GameOverStyledButton>
+    </DialogActions>
   );
 
   return (
