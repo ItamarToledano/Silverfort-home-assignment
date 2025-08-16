@@ -26,7 +26,6 @@ export interface GameState {
   board: Cell[][];
   score: number;
   gameOver: boolean;
-  turn: number;
 }
 
 export interface LeaderboardEntry {

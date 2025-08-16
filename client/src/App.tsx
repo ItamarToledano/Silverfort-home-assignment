@@ -163,12 +163,6 @@ const App: React.FC = () => {
                 variant="filled"
                 sx={{ fontSize: "1.2rem", fontWeight: "bold" }}
               />
-              <Chip
-                label={`Turn: ${gameState.turn}`}
-                color="secondary"
-                variant="filled"
-                sx={{ fontSize: "1.2rem", fontWeight: "bold" }}
-              />
               {!isConnected && (
                 <Chip
                   label="Disconnected"

@@ -15,7 +15,6 @@ export class GameService {
       board: this.generateValidBoard(),
       score: 0,
       gameOver: false,
-      turn: 0,
     };
   }
 
@@ -84,11 +83,19 @@ export class GameService {
   ): Set<Shape> {
     const shapes = new Set<Shape>();
 
-    // Check adjacent cells (not diagonal)
-    if (row > 0) shapes.add(board[row - 1][col].shape);
-    if (row < 2) shapes.add(board[row + 1][col].shape);
-    if (col > 0) shapes.add(board[row][col - 1].shape);
-    if (col < 5) shapes.add(board[row][col + 1].shape);
+    // Check adjacent cells (not diagonal) - only if they exist
+    if (row > 0 && board[row - 1] && board[row - 1][col]) {
+      shapes.add(board[row - 1][col].shape);
+    }
+    if (row < 2 && board[row + 1] && board[row + 1][col]) {
+      shapes.add(board[row + 1][col].shape);
+    }
+    if (col > 0 && board[row] && board[row][col - 1]) {
+      shapes.add(board[row][col - 1].shape);
+    }
+    if (col < 5 && board[row] && board[row][col + 1]) {
+      shapes.add(board[row][col + 1].shape);
+    }
 
     return shapes;
   }
@@ -100,11 +107,19 @@ export class GameService {
   ): Set<Color> {
     const colors = new Set<Color>();
 
-    // Check adjacent cells (not diagonal)
-    if (row > 0) colors.add(board[row - 1][col].color);
-    if (row < 2) colors.add(board[row + 1][col].color);
-    if (col > 0) colors.add(board[row][col - 1].color);
-    if (col < 5) colors.add(board[row][col + 1].color);
+    // Check adjacent cells (not diagonal) - only if they exist
+    if (row > 0 && board[row - 1] && board[row - 1][col]) {
+      colors.add(board[row - 1][col].color);
+    }
+    if (row < 2 && board[row + 1] && board[row + 1][col]) {
+      colors.add(board[row + 1][col].color);
+    }
+    if (col > 0 && board[row] && board[row][col - 1]) {
+      colors.add(board[row][col - 1].color);
+    }
+    if (col < 5 && board[row] && board[row][col + 1]) {
+      colors.add(board[row][col + 1].color);
+    }
 
     return colors;
   }
@@ -160,7 +175,6 @@ export class GameService {
     this.gameState.board[row][col].cooldown = 3;
     this.gameState.board[row][col].isClickable = false;
     this.gameState.score++;
-    this.gameState.turn++;
 
     // Update cooldowns for all cells
     this.updateCooldowns();
